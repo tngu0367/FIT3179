@@ -6,5 +6,6 @@
     "x": { "field": "daily_cost", "type": "quantitative" },
     "y": { "field": "city", "type": "nominal" } }
     }
+    
 
     
