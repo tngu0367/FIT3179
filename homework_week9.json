@@ -42,7 +42,7 @@
                 },
                 "size": {
                     "field": "mag",
-                    "type": "quantitative",
+                    "type": "quantitative"
                 }
             }
         }
