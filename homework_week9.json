@@ -20,7 +20,7 @@
         },
         {
             "data": {
-                "url": "https://raw.githubusercontent.com/FIT3179/Vega-Lite/main/2_symbo l_map/data/earthquake.csv"
+                "url": "test_data.csv"
             },
             "mark": {
                 "type": "circle",
@@ -43,5 +43,7 @@
                 }
             }
         }
+        
+        
     ]
 }
