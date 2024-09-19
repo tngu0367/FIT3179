@@ -7,7 +7,7 @@
     "layer": [
       {
         "data": {
-          "url": "https://tngu0367.github.io/FIT3179/ne_110m-2.json",
+          "url": "https://tngu0367.github.io/FIT3179/ne_110m.json",
           "format": {
             "type": "topojson",
             "feature": "ne_110m_graticules_30"
