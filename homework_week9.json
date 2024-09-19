@@ -6,7 +6,7 @@
     "layer": [
         {
             "data": {
-                "url": "ne_110m-2.json",
+                "url": "https://tngu0367.github.io/FIT3179/ne_110m-2.json",
                 "format": {
                     "type": "topojson",
                     "feature": "ne_110m_admin_0_countries"
@@ -20,7 +20,7 @@
         },
         {
             "data": {
-                "url": "test_data.csv"
+                "url": "https://tngu0367.github.io/FIT3179/test_data.csv"
             },
             "mark": {
                 "type": "circle",
