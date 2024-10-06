@@ -1,0 +1,19 @@
+Region,Region code (ASGS),Indicator,Unit,2014-15,2015-16,2016-17,2017-18,2018-19,2019-20,2020-21,2021-22
+New South Wales,1,Area-average rainfall (a),mm,519,549,584,362,353,422,672,773
+New South Wales,1,Accessible volume in major dam storages as of June 30 (b),ML,9490328,9622964,12918485,8259196,5294662,7636356,12103900,16740871
+Victoria,2,Area-average rainfall (a),mm,511,547,713,568,516,583,638,719
+Victoria,2,Accessible volume in major dam storages as of June 30 (b),ML,7203203,5259401,8513287,7878058,5712029,6440506,7709148,10489962
+Queensland,3,Area-average rainfall (a),mm,468,563,629,535,582,443,606,702
+Queensland,3,Accessible volume in major dam storages as of June 30 (b),ML,8227319,7604159,7949405,7800091,6984971,6150395,6081871,8133964
+South Australia,4,Area-average rainfall (a),mm,166,253,299,189,143,125,237,266
+South Australia,4,Accessible volume in major dam storages as of June 30 (b),ML,2052191,2068870,2087256,2014560,2032886,2044705,2100220,2101172
+Western Australia,5,Area-average rainfall (a),mm,362,352,517,399,226,269,416,355
+Western Australia,5,Accessible volume in major dam storages as of June 30 (b),ML,9847259,7870902,10799245,8948801,6199395,4375064,8229323,7833380
+Tasmania,6,Area-average rainfall (a),mm,1230,1291,1398,1319,1286,1438,1223,1334
+Tasmania,6,Accessible volume in major dam storages as of June 30 (b),ML,10306788,10230425,11512849,12634033,11703464,12485084,12033702,10932468
+Northern Territory,7,Area-average rainfall (a),mm,517,535,779,522,343,391,628,489
+Northern Territory,7,Accessible volume in major dam storages as of June 30 (b),ML,269828,254525,280632,276608,209047,189586,251891,278555
+Australian Capital Territory,8,Area-average rainfall (a),mm,816,875,846,707,673,627,1153,1230
+Australian Capital Territory,8,Accessible volume in major dam storages as of June 30 (b),ML,101264,110571,126031,108511,87110,100504,158430,158430
+Australia,0,Area-average rainfall (a),mm,416,453,580,433,347,347,513,509
+Australia,0,Accessible volume in major dam storages as of June 30 (b),ML,47498180,43021817,54187190,47919858,38223564,39422200,48668485,56668802
