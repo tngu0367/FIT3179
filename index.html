@@ -1,333 +1,626 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Australian Energy Data Visualisation</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Use in Australia</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.21.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.5.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.22.1"></script>
+    <style>
+        * {
+          font-family: 'Oxygen', sans-serif;
+          line-height: 1.5;
+        }
+    
+        h1 {
+          font-weight: 900;
+          text-align: center;
+          margin-top: 20px;
+          color: #ecf0f1;
+        }
+    
+        h2 {
+          text-align: center;
+          color: #2c3e50;
+          margin-top: 30px;
+        }
+    
+        body {
+          background-color: lightgray;
+          padding: 20px;
+        } 
+        #chart{
+        border-radius: 8px;
+        display: flex; 
+        justify-content: right; 
+        align-items: right; 
+        }
 
-  <!-- Import Vega & Vega-Lite -->
-  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+        #energy_chart-map {
+        border-radius: 8px;
+        display: flex; 
+        justify-content: right; 
+        align-items: right; 
+        }
 
-  <!-- Import Leaflet.js -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        #australia-map {
+        border-radius: 8px;
+        display: flex; /* Flexbox to align content inside the map if needed */
+        justify-content: left; /* Centers any content inside the map div */
+        align-items: left; /* Centers any content inside the map div */
+        }
+        
+        .page {
+          width: 750px;
+          background-color: white;
+          margin: auto;
+          padding: 20px;
+          padding-top: 35px;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    
+        .vis-container {
+          width: 100%;
+          margin: 20px 0;
+          border-radius: 8px;
+        
+        }
+    
+        footer {
+          text-align: center;
+          background-color: #34495e;
+          color: #ecf0f1;
+          position: relative;
+          bottom: 0;
+          width: 100%;
+        }
+    
+        footer p {
+          margin: 0;
+          font-size: 0.9em;
+        }
+        .chart-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Oxygen', sans-serif;
+        font-size: 1.2em;
+        color: #2c3e50;
+        background-color: lightgray;
+        margin: 20px auto; /* Centers the container */
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        }
+        #yearDropdown {
+        font-family: 'Oxygen', sans-serif;
+        font-size: 1em;
+        padding: 10px;
+        width: 100%;
+        max-width: 300px; /* Adjust width as needed */
+        border: 1px solid #2c3e50;
+        border-radius: 8px;
+        background-color: #ecf0f1;
+        color: #2c3e50;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        appearance: none; /* Removes default arrow in some browsers */
+        outline: none;
+        cursor: pointer;
+        margin: 20px auto;
+        display: block; /* Centers the dropdown */
+        }
 
-  <!-- Pure.css for layout -->
-  <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css">
+        #yearDropdown:focus {
+        border-color: #2980b9;
+        box-shadow: 0 0 5px rgba(41, 128, 185, 0.5);
+        }
 
-  <!-- Custom styles -->
-  <style>
-    body {
-      font-family: 'Oxygen', sans-serif;
-      background-color: #f0f0f0;
-      color: #333;
-      justify-content: center; /* Centers horizontally */
-  align-items: center; /* Centers vertically */
-    }
-    .page {
-      width: 80%;
-      margin: 40px auto;
-      padding: 20px;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-    h1, h2 {
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-    }
-    h1 {
-      font-size: 2.5em;
-      color: #1f77b4;
-    }
-    h2 {
-      font-size: 1.7em;
-      color: #333;
-      margin-top: 30px;
-      border-bottom: 2px solid #1f77b4;
-      padding-bottom: 10px;
-    }
-    p {
-      font-size: 1.1em;
-      text-align: justify;
-      line-height: 1.6;
-    }
-    .vis-container {
-  width: 1010px; 
-  height: 300px; 
-  margin: auto; 
-  margin-bottom: 20px; 
-  border: 2px solid #ddd; 
-  border-radius: 8px; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-  padding: 15px; 
-  background-color: #f9f9f9; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  font-size: 18px; 
-  color: #888; 
-  text-align: center;
-}
-
-.vis-container:empty::before {
-  content: "Visualization will load here...";
-  color: #888;
-  font-style: italic;
-}
-
-    #map {
-      height: 600px;
-      width: 100%;
-      margin-top: 20px;
-      border-radius: 8px;
-      border: 2px solid #ddd;
-    }
-    footer {
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    text-align: center; 
-    font-size: 0.9em; 
-    color: #777; 
-    margin-top: 10px; 
-    padding: 10px; 
-    }
-
-    #industry-consumption {
-    width: 100%; 
-    max-width: 1010px; 
-    height: 400px; 
-    border: 2px solid white; 
-    border-radius: 8px; 
-    background-color: white; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    }
-    #renewable-consumption{
-    width: 100%; 
-    max-width: 1010px; 
-    margin: 0 auto; 
-    height: 400px; 
-    border: 2px solid white; 
-    border-radius: 8px; 
-    background-color: white; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    }
-    #rainfall-storage {
-    width: 100%; 
-    max-width: 1010px; 
-    margin: 0 auto; 
-    height: 400px; 
-    border: 2px solid white; 
-    border-radius: 8px; 
-    background-color: white; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    }
+        #yearDropdown option {
+        padding: 10px;
+        }
+        .chart-text {
+        width: 50%; /* Adjust the text width */
+        padding-left: 20px; /* Add some padding for spacing */
+        }
 
 
-
-  </style>
+      </style>
 </head>
 <body>
 
-<div class="page">
-  <!-- Title and Description -->
-  <h1>Australian Energy Data Overview</h1>
-  <p>Welcome to the Australian Energy Data visualisation platform. This project presents an interactive exploration of energy consumption trends, rainfall, and renewable energy production across Australia's states and territories. Dive into maps and charts showcasing real-time data from the 2021-22 fiscal year.</p>
+    <h1 style="background-color: #34495e;" style="color: #ecf0f1;">Energy Use in Australia</h1>
+    
+    <!-- Resizable Australia Map -->
+    <div class="chart-container">
+        <div id="australia-map"></div>
+        <div class="chart-text" style="text-align: justify; ">
+            <h3 style="text-decoration: underline;">Energy Use in Australia by State</h3>
+            <p>Energy consumption in Australia varies significantly across states, reflecting different energy sources and their contribution to overall usage. The energy mix includes coal, oil, gas, and renewables, each playing a unique role depending on the region.<br>
+                
+                In 2020, coal and oil were the dominant energy sources in most states, while gas and renewables saw substantial usage in others. For example, New South Wales relied heavily on oil (43.7%) and coal (37.1%), while Western Australia saw the highest use of gas at 54.5%. Tasmania, however, led in renewable energy usage, with 44.1% of its energy coming from renewable sources.<br>
+                
+                This data emphasizes Australia's diverse energy landscape, influenced by geography, infrastructure, and local energy policies.</p>
+        </div>
+    </div>
+    
+    
+    <script>
+        // Data for energy usage in percentage by state
+        const energyData = [
+            {"State": "New South Wales", "Coal": 37.1, "Oil": 43.7, "Gas": 9.5, "Renewables": 9.8},
+            {"State": "Victoria", "Coal": 33.4, "Oil": 39.1, "Gas": 18.1, "Renewables": 9.4},
+            {"State": "Queensland", "Coal": 32.3, "Oil": 36.6, "Gas": 19.9, "Renewables": 11.1},
+            {"State": "Western Australia", "Coal": 7.7, "Oil": 34.6, "Gas": 54.5, "Renewables": 3.3},
+            {"State": "South Australia", "Coal": 7.5, "Oil": 49.2, "Gas": 25.4, "Renewables": 18.0},
+            {"State": "Tasmania", "Coal": 8.9, "Oil": 39.7, "Gas": 7.3, "Renewables": 44.1},
+            {"State": "Northern Territory", "Coal": 0.0, "Oil": 28.2, "Gas": 70.4, "Renewables": 1.3},
+            {"State": "Australian Capital Territory", "Coal": 25.9, "Oil": 38.9, "Gas": 25.8, "Renewables": 9.4}
+        ];
 
-  <!-- Map Area -->
-  <h2>Energy Consumption by State</h2>
-  <p>This map illustrates energy consumption by state along with additional data on rainfall and dam storage levels. Hover over the markers to see details for each state.</p>
-  <div id="map"></div>
+        // Vega-Lite Specification for Energy Use in Australia Map
+        const energyMapSpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "title": "Energy Use in Australia by State (Percentage)",
+            "width": 600,
+            "height": 500,
+            "background": "#D3D3D3", // Set background color here
+            "data": {
+                "url": "https://raw.githubusercontent.com/amishmishra27/Vega_Testing/refs/heads/main/aus_boundaries.topojson",
+                "format": {"type": "topojson", "feature": "STE_2021_AUST_GDA2020"}
+            },
+            "projection": {"type": "mercator"},
+            "layer": [
+                {
+                    "mark": {"type": "geoshape", "fill": "lightgray", "stroke": "white"}
+                },
+                {
+                    "data": {
+                        "url": "https://raw.githubusercontent.com/amishmishra27/Vega_Testing/refs/heads/main/aus_boundaries.topojson",
+                        "format": {"type": "topojson", "feature": "ne_110m_graticules_10"}
+                    },
+                    "mark": {"type": "geoshape", "fill": null, "stroke": "lightgray"}
+                },
+                {
+                    "transform": [
+                        {
+                            "lookup": "properties.STE_NAME21",
+                            "from": {
+                                "data": {
+                                    "values": energyData,
+                                    "format": {"type": "json"}
+                                },
+                                "key": "State",
+                                "fields": ["Coal", "Oil", "Gas", "Renewables"] // Adjusting fields for multiple energy sources
+                            }
+                        }
+                    ],
+                    "mark": {"type": "geoshape", "stroke": "white"},
+                    "encoding": {
+                        "color": {
+                            "field": "Coal", // You can change this to Oil, Gas, or Renewables to visualize different data
+                            "type": "quantitative",
+                            "scale": {
+                                "domain": [-10, 45],
+                                "range": ["#f7fbff", "#08519c"] // Adjust color range as necessary
+                            }
+                        },
+                        "tooltip": [
+                            {
+                                "field": "properties.STE_NAME21",
+                                "type": "nominal",
+                                "title": "State"
+                            },
+                            {
+                                "field": "Coal",
+                                "type": "quantitative",
+                                "title": "Coal (%)"
+                            },
+                            {
+                                "field": "Oil",
+                                "type": "quantitative",
+                                "title": "Oil (%)"
+                            },
+                            {
+                                "field": "Gas",
+                                "type": "quantitative",
+                                "title": "Gas (%)"
+                            },
+                            {
+                                "field": "Renewables",
+                                "type": "quantitative",
+                                "title": "Renewables (%)"
+                            }
+                        ]
+                    }
+                }
+            ]
+        };
 
-  ``<!-- Energy Consumption by Industry Bar Chart -->
-    <h2>Energy Consumption by Industry</h2>
-    <p>This bar chart presents energy consumption across different industries from 2008 to 2023. Compare how various sectors like agriculture, manufacturing, and transport have utilized energy over the years.</p>
-    <div id="industry-consumption"></div>
+        // Embed the map
+        vegaEmbed('#australia-map', energyMapSpec).then(function(result) {
+            // Handle success
+        }).catch(console.error);
+    </script>
+    <hr>
 
-    <!-- Renewable Energy Consumption Line Chart -->
-    <h2>Renewable Energy Consumption</h2>
-    <p>This line chart showcases renewable energy consumption across Australia from 2015 to 2023. Track the growth of various energy sources like solar, wind, biomass, and hydropower over time.</p>
-    <div id="renewable-consumption"></div>
 
-    <!-- Rainfall and Dam Storage Levels Bar Chart -->
-    <h2>Rainfall and Dam Storage Levels</h2>
-    <p>Here, we compare rainfall levels with dam storage capacities for different regions of Australia from 2014 to 2022. This visualization highlights how rainfall correlates with water storage in major dams across the country.</p>
-    <div id="rainfall-storage"></div>
-  
+    <h1 style="background-color: #34495e;" style="color: #ecf0f1;">Energy Index Visualization (1982–2023)</h1>
+    <!-- Div to hold the chart -->
+
+    <div class="chart-container">
+        <div class="chart-text" style="text-align: justify;" style="margin-right: 10px;">
+            <h3 style="text-decoration: underline;">Energy Index in Australia (1982–2023)</h3>
+            <p>
+                From 1982 to 2023, Australia’s energy index shows rising consumption, particularly in Queensland and Western Australia. Queensland peaked around 2014, while Western Australia experienced notable growth post-2007. The Northern Territory fluctuated, and the Rest of Australia remained stable with slight recent declines.            </p>
+        </div>
+        <div id="energy_chart"></div> 
+    </div>
+    
+    
+    <script type="text/javascript">
+        // Vega-Lite specification with embedded data
+        const spec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "description": "Line chart of Energy Index in different regions from 1982–2023",
+            "width": 650,
+            "height": 350,
+            "background": "#D3D3D3", // Set background color here
+            "data": {
+                "values": [
+                    {"Year": "1982–83", "Queensland": 100.0, "Western Australia": 100.0, "Northern Territory": 100.0, "Rest of Australia": 100.0},
+                    {"Year": "1983–84", "Queensland": 105.6, "Western Australia": 103.1, "Northern Territory": 107.4, "Rest of Australia": 102.5},
+                    {"Year": "1984–85", "Queensland": 110.9, "Western Australia": 112.6, "Northern Territory": 112.3, "Rest of Australia": 106.5},
+                    {"Year": "1985–86", "Queensland": 111.7, "Western Australia": 113.2, "Northern Territory": 115.2, "Rest of Australia": 107.6},
+                    {"Year": "1986–87", "Queensland": 114.5, "Western Australia": 117.7, "Northern Territory": 120.8, "Rest of Australia": 111.2},
+                    {"Year": "1987–88", "Queensland": 118.6, "Western Australia": 128.4, "Northern Territory": 125.2, "Rest of Australia": 113.5},
+                    {"Year": "1988–89", "Queensland": 125.3, "Western Australia": 140.4, "Northern Territory": 125.0, "Rest of Australia": 119.7},
+                    {"Year": "1989–90", "Queensland": 127.8, "Western Australia": 155.3, "Northern Territory": 128.7, "Rest of Australia": 122.0},
+                    {"Year": "1990–91", "Queensland": 129.6, "Western Australia": 160.3, "Northern Territory": 134.8, "Rest of Australia": 121.0},
+                    {"Year": "1991–92", "Queensland": 132.0, "Western Australia": 163.0, "Northern Territory": 139.5, "Rest of Australia": 121.4},
+                    {"Year": "1992–93", "Queensland": 140.1, "Western Australia": 171.4, "Northern Territory": 140.2, "Rest of Australia": 122.7},
+                    {"Year": "1993–94", "Queensland": 146.5, "Western Australia": 181.9, "Northern Territory": 143.4, "Rest of Australia": 124.2},
+                    {"Year": "1994–95", "Queensland": 156.5, "Western Australia": 194.6, "Northern Territory": 151.5, "Rest of Australia": 128.1},
+                    {"Year": "1995–96", "Queensland": 163.0, "Western Australia": 206.9, "Northern Territory": 164.2, "Rest of Australia": 130.9},
+                    {"Year": "1996–97", "Queensland": 168.8, "Western Australia": 213.3, "Northern Territory": 170.8, "Rest of Australia": 133.2},
+                    {"Year": "1997–98", "Queensland": 178.9, "Western Australia": 217.5, "Northern Territory": 172.5, "Rest of Australia": 137.6},
+                    {"Year": "1998–99", "Queensland": 181.7, "Western Australia": 220.9, "Northern Territory": 179.4, "Rest of Australia": 141.1},
+                    {"Year": "1999–00", "Queensland": 186.5, "Western Australia": 226.0, "Northern Territory": 187.3, "Rest of Australia": 143.0},
+                    {"Year": "2000–01", "Queensland": 188.4, "Western Australia": 232.5, "Northern Territory": 179.4, "Rest of Australia": 143.6},
+                    {"Year": "2001–02", "Queensland": 195.3, "Western Australia": 237.3, "Northern Territory": 179.9, "Rest of Australia": 145.0},
+                    {"Year": "2002–03", "Queensland": 196.5, "Western Australia": 235.1, "Northern Territory": 139.2, "Rest of Australia": 147.5},
+                    {"Year": "2003–04", "Queensland": 199.7, "Western Australia": 238.5, "Northern Territory": 143.8, "Rest of Australia": 152.7},
+                    {"Year": "2004–05", "Queensland": 226.2, "Western Australia": 244.2, "Northern Territory": 150.8, "Rest of Australia": 150.5},
+                    {"Year": "2005–06", "Queensland": 236.3, "Western Australia": 246.9, "Northern Territory": 178.9, "Rest of Australia": 153.7},
+                    {"Year": "2006–07", "Queensland": 245.4, "Western Australia": 267.7, "Northern Territory": 202.9, "Rest of Australia": 156.2},
+                    {"Year": "2007–08", "Queensland": 238.1, "Western Australia": 270.2, "Northern Territory": 235.3, "Rest of Australia": 157.6},
+                    {"Year": "2008–09", "Queensland": 248.5, "Western Australia": 301.1, "Northern Territory": 233.0, "Rest of Australia": 155.9},
+                    {"Year": "2009–10", "Queensland": 239.0, "Western Australia": 297.4, "Northern Territory": 230.8, "Rest of Australia": 157.9},
+                    {"Year": "2010–11", "Queensland": 230.8, "Western Australia": 321.8, "Northern Territory": 244.6, "Rest of Australia": 159.8},
+                    {"Year": "2011–12", "Queensland": 242.8, "Western Australia": 322.4, "Northern Territory": 240.7, "Rest of Australia": 156.2},
+                    {"Year": "2012–13", "Queensland": 246.5, "Western Australia": 334.7, "Northern Territory": 245.5, "Rest of Australia": 154.9},
+                    {"Year": "2013–14", "Queensland": 247.3, "Western Australia": 350.2, "Northern Territory": 243.0, "Rest of Australia": 150.6},
+                    {"Year": "2014–15", "Queensland": 265.2, "Western Australia": 343.2, "Northern Territory": 205.9, "Rest of Australia": 149.1},
+                    {"Year": "2015–16", "Queensland": 270.5, "Western Australia": 369.0, "Northern Territory": 205.7, "Rest of Australia": 150.4},
+                    {"Year": "2016–17", "Queensland": 282.9, "Western Australia": 386.3, "Northern Territory": 204.2, "Rest of Australia": 148.2},
+                    {"Year": "2017–18", "Queensland": 286.0, "Western Australia": 397.1, "Northern Territory": 221.0, "Rest of Australia": 148.5},
+                    {"Year": "2018–19", "Queensland": 282.5, "Western Australia": 414.0, "Northern Territory": 326.0, "Rest of Australia": 146.0},
+                    {"Year": "2019–20", "Queensland": 274.5, "Western Australia": 415.3, "Northern Territory": 359.1, "Rest of Australia": 147.0},
+                    {"Year": "2020–21", "Queensland": 267.5, "Western Australia": 431.0, "Northern Territory": 389.1, "Rest of Australia": 147.0},
+                    {"Year": "2021–22", "Queensland": 265.4, "Western Australia": 436.7, "Northern Territory": 395.4, "Rest of Australia": 145.9},
+                    {"Year": "2022–23", "Queensland": 263.1, "Western Australia": 432.3, "Northern Territory": 400.2, "Rest of Australia": 145.2}
+                ]
+            },
+            "mark": {
+            "type": "bar", // Keep the bar mark for your chart
+            "tooltip": true // Enable tooltip for bars
+            },
+            "encoding": {
+                "x": {
+                    "field": "Year",
+                    "type": "ordinal",
+                    "title": "Year"
+                },
+                "y": {
+                    "field": "value",
+                    "type": "quantitative",
+                    "title": "Energy Index"
+                },
+                "color": {
+                    "field": "key",
+                    "type": "nominal",
+                    "title": "Region"
+                },
+                "tooltip": [ // Define the tooltip content
+                    {"field": "Year", "type": "ordinal", "title": "Year"},
+                    {"field": "value", "type": "quantitative", "title": "Energy Index"},
+                    {"field": "key", "type": "nominal", "title": "Region"}
+                ]
+            },
+            "transform": [
+                {
+                    "fold": ["Queensland", "Western Australia", "Northern Territory", "Rest of Australia"],
+                    "as": ["key", "value"]
+                }
+            ]
+        };
+
+    // Embed the visualization
+    vegaEmbed('#energy_chart', spec).catch(console.error);
+</script>
+<hr>
+
+
+<h1 style="background-color: #34495e;" style="color: #ecf0f1;">Australian Energy Exports (By Year)</h1>
+
+<!-- Dropdown to select year -->
+<select id="yearDropdown" onchange="updateChart()">
+    <option value="2022–23">2022–23</option>
+    <option value="2021–22">2021–22</option>
+    <option value="2020–21">2020–21</option>
+    <option value="2019–20">2019–20</option>
+    <option value="2018–19">2018–19</option>
+    <option value="2017–18">2017–18</option>
+    <option value="2016–17">2016–17</option>
+    <option value="2015–16">2015–16</option>
+    <option value="2014–15">2014–15</option>
+    <option value="2013–14">2013–14</option>
+    <option value="2012–13">2012–13</option>
+    <option value="2011–12">2011–12</option>
+    <option value="2010–11">2010–11</option>
+    <option value="2009–10">2009–10</option>
+    <option value="2008–09">2008–09</option>
+    <option value="2007–08">2007–08</option>
+    <option value="2006–07">2006–07</option>
+    <option value="2005–06">2005–06</option>
+    <option value="2004–05">2004–05</option>
+    <option value="2003–04">2003–04</option>
+    <option value="2002–03">2002–03</option>
+    <option value="2001–02">2001–02</option>
+    <option value="2000–01">2000–01</option>
+    <option value="1999–00">1999–00</option>
+    <option value="1998–99">1998–99</option>
+    <option value="1997–98">1997–98</option>
+    <option value="1996–97">1996–97</option>
+    <option value="1995–96">1995–96</option>
+    <option value="1994–95">1994–95</option>
+    <option value="1993–94">1993–94</option>
+    <option value="1992–93">1992–93</option>
+    <option value="1991–92">1991–92</option>
+    <option value="1990–91">1990–91</option>
+    <option value="1989–90">1989–90</option>
+    <option value="1988–89">1988–89</option>
+    <option value="1987–88">1987–88</option>
+    <option value="1986–87">1986–87</option>
+    <option value="1985–86">1985–86</option>
+    <option value="1984–85">1984–85</option>
+    <option value="1983–84">1983–84</option>
+    <option value="1982–83">1982–83</option>
+</select>
+
+<!-- Container for the pie chart -->
+<div class="chart-container">
+    <div id="pie_chart"></div> 
+    <div class="chart-text" style="text-align: justify;" style="margin-right: 10px;">
+        <h3 style="text-decoration: underline;">Energy Exports in Australia (1982–2023)</h3>
+        <p>
+            Australia has long been a significant player in the global energy export market, primarily exporting coal, liquefied natural gas (LNG), oil, and refined products.<br>
+
+In 2022–23, coal exports reached 9,625.9 PJ, down from a peak of 11,088.2 PJ in 2019–20. LNG exports also showed a robust presence, totaling 4,540.9 PJ in 2022–23, although this was a slight decrease from 4,636.8 PJ in 2021–22. Oil and LPG exports contributed 724.5 PJ, while refined products accounted for only 12.6 PJ.<br>
+
+This data highlights Australia's heavy reliance on fossil fuel exports, particularly coal and LNG, underscoring the country’s critical role in fulfilling global energy demands. However, the declining trend in coal exports raises questions about the future of Australia's energy export landscape and the potential shift towards more sustainable energy sources in response to global environmental concerns.
+        </p>
+    </div>
 </div>
-
-<!-- Footer -->
-<footer>
-  <p>&copy; 2024 Australian Energy Data Project. All rights reserved.</p>
-</footer>
-
 <script>
-  // Initialize Leaflet map
-  var map = L.map('map').setView([-25.2744, 133.7751], 4);  // Australia centered
-
-  // Add OpenStreetMap tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 18
-  }).addTo(map);
-
-  // Energy data for Australian states
-  var energyData = [
-    { "state": "New South Wales", "lat": -33.8688, "lng": 151.2093, "rainfall": "519 mm", "damStorage": "9,490,328 ML", "year": "2021-22" },
-    { "state": "Victoria", "lat": -37.8136, "lng": 144.9631, "rainfall": "719 mm", "damStorage": "10,489,962 ML", "year": "2021-22" },
-    { "state": "Queensland", "lat": -27.4698, "lng": 153.0251, "rainfall": "702 mm", "damStorage": "8,133,964 ML", "year": "2021-22" },
-    { "state": "South Australia", "lat": -34.9285, "lng": 138.6007, "rainfall": "266 mm", "damStorage": "2,101,172 ML", "year": "2021-22" },
-    { "state": "Western Australia", "lat": -31.9505, "lng": 115.8605, "rainfall": "355 mm", "damStorage": "7,833,380 ML", "year": "2021-22" },
-    { "state": "Tasmania", "lat": -42.8821, "lng": 147.3272, "rainfall": "1,334 mm", "damStorage": "10,932,468 ML", "year": "2021-22" },
-    { "state": "Northern Territory", "lat": -12.4634, "lng": 130.8456, "rainfall": "489 mm", "damStorage": "278,555 ML", "year": "2021-22" },
-    { "state": "Australian Capital Territory", "lat": -35.2809, "lng": 149.1300, "rainfall": "1,230 mm", "damStorage": "158,430 ML", "year": "2021-22" }
-  ];
-
-  // Add markers for each state with popups
-  energyData.forEach(function(state) {
-      L.marker([state.lat, state.lng]).addTo(map)
-        .bindPopup('<b>' + state.state + '</b><br>Rainfall: ' + state.rainfall + '<br>Dam Storage: ' + state.damStorage + '<br>Year: ' + state.year);
-  });
-
-  // Energy Consumption by Industry Visualization
-  var industryConsumptionSpec = {
-    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "data": {
-      "url": "data/energy_consumption_by_industry.csv",
-      "format": {"type": "csv"}
-    },
-    "transform": [
-      {
-        "fold": ["2008-09", "2009-10", "2010-11", "2011-12", "2012-13", "2013-14", "2014-15", "2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21", "2021-22", "2022-23"],
-        "as": ["year", "value"]
-      }
-    ],
-    "mark": "bar",
-    "encoding": {
-      "x": {
-        "field": "year",
-        "type": "ordinal",
-        "title": "Year"
-      },
-      "y": {
-        "field": "value",
-        "type": "quantitative",
-        "title": "Energy Consumption (PJ)"
-      },
-      "color": {
-        "field": "Classification",
-        "type": "nominal",
-        "scale": {
-          "domain": ["Agriculture", "Mining", "Manufacturing", "Electricity generation", "Construction", "Transport", "Gas supply", "Water and waste", "Commercial and services", "Residential", "Total"],
-          "range": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#f7b733"]
-        }
-      },
-      "tooltip": [
-        {"field": "year", "title": "Year"},
-        {"field": "value", "title": "Value (PJ)"}
-      ]
-    }
-  };
-
-  vegaEmbed('#industry-consumption', industryConsumptionSpec, { "actions": false }).catch(console.error);
-
-  // Renewable Energy Consumption Visualization
-var renewableConsumptionSpec = {
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "data": {
-    "url": "data/renewable_energy_consumption.csv",
-    "format": {"type": "csv"}
-  },
-  "transform": [
-    {
-      "fold": ["2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21", "2021-22", "2022-23"],
-      "as": ["year", "value"]
-    }
-  ],
-  "mark": "line",
-  "encoding": {
-    "x": {
-      "field": "year",
-      "type": "ordinal",
-      "title": "Year"
-    },
-    "y": {
-      "field": "value",
-      "type": "quantitative",
-      "title": "Consumption (PJ)"
-    },
-    "color": {
-      "field": "Energy",
-      "type": "nominal",
-      "scale": {
-        "domain": ["Biomass", "wood and other b", "bagasse", "Municipal and industrial waste", "Biogas", "landfill gas", "other biogas", "Biofuels", "ethanol", "biodiesel", "other liquid biofuels", "Wind power", "Hydro power", "Solar PV", "Solar hot water", "Total"],
-        "range": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#f7b733", "#7ed957", "#f75757", "#e9c46a", "#264653", "#e76f51"]
-      }
-    },
-    "tooltip": [
-      {"field": "year", "type": "ordinal", "title": "Year"},
-      {"field": "value", "type": "quantitative", "title": "Value (PJ)"}
-    ]
-  }
+    // Data for each year (extended with the available data)
+const energyData1 = {
+    "2022–23": {"Coal": 9625.9, "LNG": 4540.9, "Oil and LPG": 724.5, "Refined products": 12.6},
+    "2021–22": {"Coal": 10195.6, "LNG": 4636.8, "Oil and LPG": 772.0, "Refined products": 18.8},
+    "2020–21": {"Coal": 10346.3, "LNG": 4314.4, "Oil and LPG": 721.9, "Refined products": 38.0},
+    "2019–20": {"Coal": 11088.2, "LNG": 4413.5, "Oil and LPG": 766.9, "Refined products": 42.2},
+    "2018–19": {"Coal": 11154.1, "LNG": 4167.3, "Oil and LPG": 625.6, "Refined products": 47.3},
+    "2017–18": {"Coal": 10780.3, "LNG": 3441.3, "Oil and LPG": 544.0, "Refined products": 46.4},
+    "2016–17": {"Coal": 10705.9, "LNG": 2911.1, "Oil and LPG": 534.0, "Refined products": 43.2},
+    "2015–16": {"Coal": 11021.5, "LNG": 2059.4, "Oil and LPG": 567.7, "Refined products": 24.4},
+    "2014–15": {"Coal": 11085.6, "LNG": 1382.5, "Oil and LPG": 617.7, "Refined products": 26.6},
+    "2013–14": {"Coal": 10604.9, "LNG": 1283.9, "Oil and LPG": 614.6, "Refined products": 24.7},
+    "2012–13": {"Coal": 9507.0, "LNG": 1298.1, "Oil and LPG": 647.6, "Refined products": 35.1},
+    "2011–12": {"Coal": 8532.4, "LNG": 1041.4, "Oil and LPG": 701.8, "Refined products": 47.2},
+    "2010–11": {"Coal": 8055.0, "LNG": 1102.0, "Oil and LPG": 792.7, "Refined products": 34.6},
+    "2009–10": {"Coal": 8304.6, "LNG": 986.9, "Oil and LPG": 743.3, "Refined products": 31.5},
+    "2008–09": {"Coal": 7384.4, "LNG": 838.3, "Oil and LPG": 681.2, "Refined products": 43.4},
+    "2007–08": {"Coal": 7157.2, "LNG": 744.1, "Oil and LPG": 661.0, "Refined products": 66.3},
+    "2006–07": {"Coal": 6951.7, "LNG": 779.7, "Oil and LPG": 667.0, "Refined products": 63.6},
+    "2005–06": {"Coal": 6611.5, "LNG": 654.4, "Oil and LPG": 557.5, "Refined products": 76.8},
+    "2004–05": {"Coal": 6614.7, "LNG": 576.0, "Oil and LPG": 658.9, "Refined products": 67.2},
+    "2003–04": {"Coal": 6228.2, "LNG": 430.5, "Oil and LPG": 727.2, "Refined products": 90.8},
+    "2002–03": {"Coal": 5942.1, "LNG": 425.8, "Oil and LPG": 861.4, "Refined products": 115.0},
+    "2001–02": {"Coal": 5632.7, "LNG": 413.4, "Oil and LPG": 968.1, "Refined products": 124.6},
+    "2000–01": {"Coal": 5518.1, "LNG": 409.6, "Oil and LPG": 961.2, "Refined products": 169.2},
+    "1999–00": {"Coal": 5014.0, "LNG": 431.0, "Oil and LPG": 845.9, "Refined products": 151.5},
+    "1998–99": {"Coal": 4807.6, "LNG": 425.4, "Oil and LPG": 592.7, "Refined products": 154.6},
+    "1997–98": {"Coal": 4617.7, "LNG": 416.2, "Oil and LPG": 621.8, "Refined products": 182.6},
+    "1996–97": {"Coal": 4156.1, "LNG": 407.2, "Oil and LPG": 522.9, "Refined products": 198.3},
+    "1995–96": {"Coal": 3959.1, "LNG": 407.0, "Oil and LPG": 442.2, "Refined products": 159.8},
+    "1994–95": {"Coal": 3890.8, "LNG": 381.8, "Oil and LPG": 455.0, "Refined products": 126.5},
+    "1993–94": {"Coal": 3682.4, "LNG": 328.1, "Oil and LPG": 387.1, "Refined products": 134.9},
+    "1992–93": {"Coal": 3676.8, "LNG": 271.1, "Oil and LPG": 412.9, "Refined products": 140.9},
+    "1991–92": {"Coal": 3521.8, "LNG": 253.5, "Oil and LPG": 373.6, "Refined products": 145.3},
+    "1990–91": {"Coal": 3239.6, "LNG": 185.0, "Oil and LPG": 366.4, "Refined products": 114.3},
+    "1989–90": {"Coal": 2981.1, "LNG": 109.3, "Oil and LPG": 319.1, "Refined products": 97.5},
+    "1988–89": {"Coal": 2860.9, "LNG": 0.0, "Oil and LPG": 239.6, "Refined products": 104.8},
+    "1987–88": {"Coal": 2932.5, "LNG": 0.0, "Oil and LPG": 302.4, "Refined products": 104.1},
+    "1986–87": {"Coal": 2722.8, "LNG": 0.0, "Oil and LPG": 281.9, "Refined products": 86.4},
+    "1985–86": {"Coal": 2564.6, "LNG": 0.0, "Oil and LPG": 265.8, "Refined products": 90.1},
+    "1984–85": {"Coal": 2398.3, "LNG": 0.0, "Oil and LPG": 284.7, "Refined products": 83.4},
+    "1983–84": {"Coal": 1914.3, "LNG": 0.0, "Oil and LPG": 114.7, "Refined products": 110.3},
+    "1982–83": {"Coal": 1608.5, "LNG": 0.0, "Oil and LPG": 64.6, "Refined products": 91.6}
 };
 
-vegaEmbed('#renewable-consumption', renewableConsumptionSpec, { "actions": false }).catch(console.error);
 
-  // Rainfall and Dam Storage Levels Visualization
-  var rainfallStorageSpec = {
-    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "data": {
-      "url": "data/rainfall_and_storage.csv",
-      "format": {"type": "csv"}
-    },
-    "transform": [
-      {
-        "fold": ["2014-15", "2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21", "2021-22"],
-        "as": ["year", "value"]
-      }
-    ],
-    "mark": "bar",
-    "encoding": {
-      "x": {
-        "field": "year",
-        "type": "ordinal",
-        "title": "Year"
-      },
-      "y": {
-        "field": "value",
-        "type": "quantitative",
-        "title": "Volume"
-      },
-      "color": {
-        "field": "Indicator",
-        "type": "nominal",
-        "scale": {
-          "domain": ["Area-average rainfall (a)", "Accessible volume in major dam storages as of June 30 (b)"],
-          "range": ["#1f77b4", "#ff7f0e"]
-        }
-      },
-      "tooltip": [
-        {"field": "Region", "type": "nominal", "title": "Region"},
-        {"field": "value", "type": "quantitative", "title": "Value"}
-      ]
+    // Function to create and update the chart based on selected year
+    function updateChart() {
+        const selectedYear = document.getElementById('yearDropdown').value;
+        const yearData = Object.entries(energyData1[selectedYear]).map(([key, value]) => ({type: key, value: value}));
+
+        const spec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "description": "Pie chart showing energy exports for the selected year",
+            "width": 300,
+            "height": 300,
+            "background": "#D3D3D3", // Set background color here
+            "data": {
+                "values": yearData
+            },
+            "mark": {
+                "type": "arc",
+                "tooltip": true,
+                "innerRadius": 50, // Donut style
+                "stroke": "white"
+            },
+            "encoding": {
+                "theta": {"field": "value", "type": "quantitative"},
+                "color": {"field": "type", "type": "nominal"},
+                "tooltip": [
+                    {"field": "type", "type": "nominal", "title": "Energy Type"},
+                    {"field": "value", "type": "quantitative", "title": "Petajoules"}
+                ]
+            },
+            "view": {"stroke": null}
+        };
+
+        vegaEmbed('#pie_chart', spec).catch(console.error);
     }
-  };
 
-  vegaEmbed('#rainfall-storage', rainfallStorageSpec, { "actions": false }).catch(console.error);
-  
+    // Initialize with the latest year by default
+    updateChart();
 </script>
 
+<hr>
 
+<h1 style="background-color: #34495e;" style="color: #ecf0f1;">Australian Energy Imports </h1>
+<div class="chart-container">
+    
+    <div class="chart-text" style="text-align: justify;" style="margin-right: 10px;">
+        <h3>Energy Imports Analysis (1982-2023)</h3>
+    <p>
+        This chart shows energy imports in petajoules for Oil and LPG, Refined Petroleum Products, Natural Gas, and Coal over four decades.
+    </p>
+
+    <h4>Key Observations:</h4>
+    <ul>
+        <li><strong>Oil and LPG:</strong> Imports peaked in the mid-2000s, then declined after 2015 due to policy shifts.</li>
+        <li><strong>Refined Petroleum:</strong> Steady growth, peaking at 1,825.8 petajoules in 2022-23, shows reliance remains.</li>
+        <li><strong>Natural Gas:</strong> Imports rose since the mid-2000s, stabilizing around 200 petajoules, reflecting a cleaner energy shift.</li>
+        <li><strong>Coal:</strong> Low imports show a slight upward trend, indicating potential backup energy amid fluctuating prices.</li>
+    </ul>
+    </div>
+    <div id="chart"></div> 
+</div>
+
+    <script type="text/javascript">
+        const energyImportsData = [
+            {"Year": "1982–83", "Oil and LPG": 455.9, "Refined petroleum products": 101.7, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1983–84", "Oil and LPG": 331.2, "Refined petroleum products": 97.2, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1984–85", "Oil and LPG": 282.4, "Refined petroleum products": 107.3, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1985–86", "Oil and LPG": 239.4, "Refined petroleum products": 105.6, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1986–87", "Oil and LPG": 299.9, "Refined petroleum products": 151.4, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1987–88", "Oil and LPG": 371.7, "Refined petroleum products": 123.7, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1988–89", "Oil and LPG": 467.6, "Refined petroleum products": 152.1, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1989–90", "Oil and LPG": 451.2, "Refined petroleum products": 174.4, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1990–91", "Oil and LPG": 519.1, "Refined petroleum products": 106.0, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1991–92", "Oil and LPG": 594.5, "Refined petroleum products": 82.3, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1992–93", "Oil and LPG": 754.5, "Refined petroleum products": 105.8, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1993–94", "Oil and LPG": 789.5, "Refined petroleum products": 108.7, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1994–95", "Oil and LPG": 805.4, "Refined petroleum products": 119.9, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1995–96", "Oil and LPG": 927.8, "Refined petroleum products": 115.9, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1996–97", "Oil and LPG": 973.4, "Refined petroleum products": 135.7, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1997–98", "Oil and LPG": 981.0, "Refined petroleum products": 90.1, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1998–99", "Oil and LPG": 1163.3, "Refined petroleum products": 137.7, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "1999–00", "Oil and LPG": 1055.7, "Refined petroleum products": 157.3, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "2000–01", "Oil and LPG": 1035.8, "Refined petroleum products": 154.2, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "2001–02", "Oil and LPG": 1071.9, "Refined petroleum products": 151.4, "Natural gas": 0.0, "Coal and coal byproducts": 0.0},
+            {"Year": "2002–03", "Oil and LPG": 1090.1, "Refined petroleum products": 191.8, "Natural gas": 0.0, "Coal and coal byproducts": 3.7},
+            {"Year": "2003–04", "Oil and LPG": 930.6, "Refined petroleum products": 361.4, "Natural gas": 0.0, "Coal and coal byproducts": 1.4},
+            {"Year": "2004–05", "Oil and LPG": 1022.9, "Refined petroleum products": 396.9, "Natural gas": 0.0, "Coal and coal byproducts": 3.7},
+            {"Year": "2005–06", "Oil and LPG": 961.1, "Refined petroleum products": 507.0, "Natural gas": 48.6, "Coal and coal byproducts": 5.7},
+            {"Year": "2006–07", "Oil and LPG": 1001.0, "Refined petroleum products": 494.5, "Natural gas": 217.7, "Coal and coal byproducts": 4.7},
+            {"Year": "2007–08", "Oil and LPG": 1040.9, "Refined petroleum products": 635.9, "Natural gas": 205.6, "Coal and coal byproducts": 2.2},
+            {"Year": "2008–09", "Oil and LPG": 967.5, "Refined petroleum products": 697.2, "Natural gas": 242.3, "Coal and coal byproducts": 1.6},
+            {"Year": "2009–10", "Oil and LPG": 1084.7, "Refined petroleum products": 706.1, "Natural gas": 211.6, "Coal and coal byproducts": 1.7},
+            {"Year": "2010–11", "Oil and LPG": 1252.5, "Refined petroleum products": 624.3, "Natural gas": 221.4, "Coal and coal byproducts": 6.4},
+            {"Year": "2011–12", "Oil and LPG": 1168.1, "Refined petroleum products": 769.7, "Natural gas": 193.6, "Coal and coal byproducts": 3.1},
+            {"Year": "2012–13", "Oil and LPG": 1166.0, "Refined petroleum products": 863.3, "Natural gas": 232.7, "Coal and coal byproducts": 1.9},
+            {"Year": "2013–14", "Oil and LPG": 1089.9, "Refined petroleum products": 911.8, "Natural gas": 233.8, "Coal and coal byproducts": 3.7},
+            {"Year": "2014–15", "Oil and LPG": 964.0, "Refined petroleum products": 1014.7, "Natural gas": 207.7, "Coal and coal byproducts": 6.4},
+            {"Year": "2015–16", "Oil and LPG": 787.5, "Refined petroleum products": 1192.3, "Natural gas": 226.4, "Coal and coal byproducts": 6.8},
+            {"Year": "2016–17", "Oil and LPG": 813.8, "Refined petroleum products": 1253.6, "Natural gas": 206.5, "Coal and coal byproducts": 7.6},
+            {"Year": "2017–18", "Oil and LPG": 887.9, "Refined petroleum products": 1333.6, "Natural gas": 186.5, "Coal and coal byproducts": 12.1},
+            {"Year": "2018–19", "Oil and LPG": 862.1, "Refined petroleum products": 1326.8, "Natural gas": 202.0, "Coal and coal byproducts": 17.2},
+            {"Year": "2019–20", "Oil and LPG": 715.5, "Refined petroleum products": 1328.4, "Natural gas": 179.7, "Coal and coal byproducts": 19.2},
+            {"Year": "2020–21", "Oil and LPG": 563.9, "Refined petroleum products": 1390.3, "Natural gas": 155.0, "Coal and coal byproducts": 13.2},
+            {"Year": "2021–22", "Oil and LPG": 407.1, "Refined petroleum products": 1554.6, "Natural gas": 152.1, "Coal and coal byproducts": 15.3},
+            {"Year": "2022–23", "Oil and LPG": 382.7, "Refined petroleum products": 1825.8, "Natural gas": 48.1, "Coal and coal byproducts": 16.7}
+        ];
+
+
+        // Converting the data into a format that Vega-Lite can easily interpret
+        const chartData = energyImportsData.flatMap(d => [
+            {"Year": d.Year, "Fuel Type": "Oil and LPG", "Petajoules": d["Oil and LPG"]},
+            {"Year": d.Year, "Fuel Type": "Refined petroleum products", "Petajoules": d["Refined petroleum products"]},
+            {"Year": d.Year, "Fuel Type": "Natural gas", "Petajoules": d["Natural gas"]},
+            {"Year": d.Year, "Fuel Type": "Coal and coal byproducts", "Petajoules": d["Coal and coal byproducts"]}
+        ]);
+
+        const chartSpec = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "width": 500,
+            "height": 350,
+            "background": "#D3D3D3", // Set background color here
+            "data": {
+                "values": chartData
+            },
+            "mark": {
+                "type": "line",
+                "point": {
+                    "filled": true,
+                    "fill": "black"
+                },
+                "tooltip": true
+            },
+            "encoding": {
+                "x": {
+                    "field": "Year",
+                    "type": "ordinal",
+                    "title": "Year"
+                },
+                "y": {
+                    "field": "Petajoules",
+                    "type": "quantitative",
+                    "title": "Energy Imports (Petajoules)",
+                    "scale": {
+                        "domain": [-100, 2000] // Start from -100, and let the upper limit be automatic
+                    }
+                },
+                "color": {
+                    "field": "Fuel Type",
+                    "type": "nominal",
+                    "title": "Fuel Type"
+                },
+                "tooltip": [
+                    {"field": "Year", "type": "ordinal", "title": "Year"},
+                    {"field": "Fuel Type", "type": "nominal", "title": "Fuel Type"},
+                    {"field": "Petajoules", "type": "quantitative", "title": "Petajoules"}
+                ]
+            }
+        };
+
+        vegaEmbed('#chart', chartSpec);
+    </script>
+<footer>
+    <p>&copy; 2024 Energy Use in Australia. All rights reserved.</p>
+ </footer>
 </body>
 </html>

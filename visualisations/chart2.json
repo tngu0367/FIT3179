@@ -1,0 +1,26 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "description": "Pie chart showing energy exports for the selected year",
+    "width": 300,
+    "height": 300,
+    "background": "#D3D3D3",
+    "data": {
+      "url": "data/australian_energy_update_2024_data_for_charts - Fig 25.csv"
+    },
+    "mark": {
+      "type": "arc",
+      "tooltip": true,
+      "innerRadius": 50,
+      "stroke": "white"
+    },
+    "encoding": {
+      "theta": {"field": "value", "type": "quantitative"},
+      "color": {"field": "type", "type": "nominal"},
+      "tooltip": [
+        {"field": "type", "type": "nominal", "title": "Energy Type"},
+        {"field": "value", "type": "quantitative", "title": "Petajoules"}
+      ]
+    },
+    "view": {"stroke": null}
+  }
+  

@@ -1,0 +1,31 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "description": "Line chart of Energy Index in different regions from 1982–2023",
+    "width": 650,
+    "height": 350,
+    "background": "#D3D3D3",
+    "data": {
+      "url": "data/australian_energy_update_2024_data_for_charts - Fig 13.csv"
+    },
+    "mark": {
+      "type": "line",
+      "tooltip": true
+    },
+    "encoding": {
+      "x": {"field": "Year", "type": "ordinal", "title": "Year"},
+      "y": {"field": "value", "type": "quantitative", "title": "Energy Index"},
+      "color": {"field": "key", "type": "nominal", "title": "Region"},
+      "tooltip": [
+        {"field": "Year", "type": "ordinal", "title": "Year"},
+        {"field": "value", "type": "quantitative", "title": "Energy Index"},
+        {"field": "key", "type": "nominal", "title": "Region"}
+      ]
+    },
+    "transform": [
+      {
+        "fold": ["Queensland", "Western Australia", "Northern Territory", "Rest of Australia"],
+        "as": ["key", "value"]
+      }
+    ]
+  }
+  

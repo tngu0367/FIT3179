@@ -1,0 +1,55 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "title": "Energy Use in Australia by State (Percentage)",
+    "width": 600,
+    "height": 500,
+    "background": "#D3D3D3",
+    "data": {
+      "url": "your_csv_link_here",
+      "format": {"type": "topojson", "feature": "STE_2021_AUST_GDA2020"}
+    },
+    "projection": {"type": "mercator"},
+    "layer": [
+      {
+        "mark": {"type": "geoshape", "fill": "lightgray", "stroke": "white"}
+      },
+      {
+        "data": {
+          "url": "data/australian_energy_update_2024_data_for_charts - Fig 12.csv",
+          "format": {"type": "topojson", "feature": "ne_110m_graticules_10"}
+        },
+        "mark": {"type": "geoshape", "fill": null, "stroke": "lightgray"}
+      },
+      {
+        "transform": [
+          {
+            "lookup": "properties.STE_NAME21",
+            "from": {
+              "data": {
+                "url": "your_csv_link_here",
+                "format": {"type": "json"}
+              },
+              "key": "State",
+              "fields": ["Coal", "Oil", "Gas", "Renewables"]
+            }
+          }
+        ],
+        "mark": {"type": "geoshape", "stroke": "white"},
+        "encoding": {
+          "color": {
+            "field": "Coal",
+            "type": "quantitative",
+            "scale": {"domain": [-10, 45], "range": ["#f7fbff", "#08519c"]}
+          },
+          "tooltip": [
+            {"field": "properties.STE_NAME21", "type": "nominal", "title": "State"},
+            {"field": "Coal", "type": "quantitative", "title": "Coal (%)"},
+            {"field": "Oil", "type": "quantitative", "title": "Oil (%)"},
+            {"field": "Gas", "type": "quantitative", "title": "Gas (%)"},
+            {"field": "Renewables", "type": "quantitative", "title": "Renewables (%)"}
+          ]
+        }
+      }
+    ]
+  }
+  

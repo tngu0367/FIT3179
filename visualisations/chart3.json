@@ -1,0 +1,30 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "width": 500,
+    "height": 350,
+    "background": "#D3D3D3",
+    "data": {
+      "url": "data/australian_energy_update_2024_data_for_charts - Fig 27.csv"
+    },
+    "mark": {
+      "type": "line",
+      "point": {"filled": true, "fill": "black"},
+      "tooltip": true
+    },
+    "encoding": {
+      "x": {"field": "Year", "type": "ordinal", "title": "Year"},
+      "y": {
+        "field": "Petajoules",
+        "type": "quantitative",
+        "title": "Energy Imports (Petajoules)",
+        "scale": {"domain": [-100, 2000]}
+      },
+      "color": {"field": "Fuel Type", "type": "nominal", "title": "Fuel Type"},
+      "tooltip": [
+        {"field": "Year", "type": "ordinal", "title": "Year"},
+        {"field": "Fuel Type", "type": "nominal", "title": "Fuel Type"},
+        {"field": "Petajoules", "type": "quantitative", "title": "Petajoules"}
+      ]
+    }
+  }
+  
